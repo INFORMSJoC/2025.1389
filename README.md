@@ -79,4 +79,4 @@ After the environment is activated, you can replicate the runs with results pres
 
 ## Results
 
-The final computational tables are in `results/tables`, and the computational figures are in `results/figures`. Raw solutions used in Tables 6-8 and Figures 4 can be found in `results/raw`.
+Raw solutions used in Tables 1-9 can be found in `data/results`.
