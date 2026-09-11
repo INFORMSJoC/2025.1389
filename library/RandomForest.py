@@ -8,7 +8,7 @@ from sklearn.model_selection import train_test_split
 # from ocdt import OCDT
 from .ocdt_c import OCDT
 import pandas as pd
-from .utils import *
+from .utils_c import *
 from sklearn.metrics import mean_squared_error
 
 

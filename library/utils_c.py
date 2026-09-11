@@ -155,13 +155,16 @@ def calculate_number_of_infeasibilities(y_pred, X_test, dataset, model, ocdt_dep
 # ---------------------------------------------------------------------------
 # How the weight vector w enters the split criterion.
 #
-# False (default): w is forwarded to the LP formulation only, and the split is
-#   evaluated on the full target vector. This matches the original code, where
-#   the weighted evaluation line was commented out in favour of
-#   calculate_mse(y, predictions). The 'mean' / 'medoid' / 'median' methods are
-#   then unaffected by w.
+# False (default): utils does not weight anything. The 'optimal' branch uses
+#   the split evaluation the LP formulation returns -- the weighting lives in
+#   the LP's own objective -- and every other prediction method is evaluated
+#   with the plain calculate_mse(y, predictions), the form left active in the
+#   original code.
 #
-# True: the split is evaluated on the scalarised target sum_j w_j * y_j.
+# True: utils additionally scalarises the criterion to sum_j w_j * y_j for the
+#   methods that do not get an evaluation from the LP. Only set this if a
+#   formulation returns predictions alone and the weighting is meant to be
+#   applied here instead.
 # ---------------------------------------------------------------------------
 SCALARISED_SPLIT_CRITERION = False
 
@@ -315,11 +318,19 @@ def split_criteria_with_methods(y, x, nof_infeasibilities_method, initial_soluti
         result = call_optimization_problem(optimization_problem, y, x, initial_solution,
                                            lagrangian_multiplier, verbose,
                                            w=w, quantities=quantities, capacity=capacity)
+        # A formulation may return the prediction vector alone, or bundle its own
+        # objective value with it. When it supplies an evaluation, that value IS
+        # the split criterion and must not be recomputed here: any weighting is
+        # already inside the LP's objective.
+        #   (predictions, split_evaluation)                 -> weighted problems
+        #   (predictions, split_evaluation, quantity_hat)   -> end-to-end
         if isinstance(result, (tuple, list)) and len(result) == 3:
-            # formulation returns (predictions, split_evaluation, quantity_hat):
-            # its own objective value is the split evaluation, so use it as is
             predictions, split_evaluation, quantity_hat = result
             return (predictions, split_evaluation, quantity_hat) if end_to_end \
+                else (predictions, split_evaluation)
+        if isinstance(result, (tuple, list)) and len(result) == 2 and np.ndim(result[1]) == 0:
+            predictions, split_evaluation = result
+            return (predictions, split_evaluation, None) if end_to_end \
                 else (predictions, split_evaluation)
         predictions = as_prediction_vector(result, n_targets)
     elif prediction_method == 'median':

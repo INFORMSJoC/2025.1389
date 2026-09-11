@@ -8,7 +8,7 @@ from sklearn.model_selection import KFold
 import numpy as np
 
 from apps import *
-from library.utils import *
+from library.utils_c import *
 from library.ocdt_c import OCDT
 from library.RandomForest import RandomForestOCDT
 import itertools
