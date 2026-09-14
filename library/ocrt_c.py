@@ -45,7 +45,7 @@ class Node:
         self.count = None
         self.parent_mse = None
 
-class OCDT:
+class OCRT:
     """
     Predictive Clustering Tree.
 

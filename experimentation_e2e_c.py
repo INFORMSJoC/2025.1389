@@ -9,8 +9,8 @@ import numpy as np
 
 from apps import *
 from library.utils_c import *
-from library.ocdt_c import OCDT
-from library.RandomForest import RandomForestOCDT
+from library.ocrt_c import OCRT
+from library.RandomForest import RandomForestOCRT
 import itertools
 from pathlib import Path
 
@@ -25,14 +25,14 @@ def weighted_sum_squared_error(y_test, y_pred, w):
     return np.sum(weighted_row_sums)
 
 if __name__ == '__main__':
-    ocdt_min_samples_split = 10
-    ocdt_min_samples_leaf = 5
+    ocrt_min_samples_split = 10
+    ocrt_min_samples_leaf = 5
     number_of_folds = 5
     verbose = False
     bforce_list = [True]
     use_hashmaps_list = [True]    
     use_initial_solution_list = [False]
-    ocdt_depth_list = [5,7] 
+    ocrt_depth_list = [5,7] 
     class_target_size_list = [5]
     class_size_list = [500]
     seed_list = [i for i in range(3)]
@@ -45,12 +45,12 @@ if __name__ == '__main__':
     perf_df = pd.DataFrame()
     
     extra_params = list(itertools.product(class_size_list, class_target_size_list,seed_list))
-    result = [(dataset, ocdt_depth, c_size, c_target,s)
-    for dataset, ocdt_depth in itertools.product(dataset_list, ocdt_depth_list)
+    result = [(dataset, ocrt_depth, c_size, c_target,s)
+    for dataset, ocrt_depth in itertools.product(dataset_list, ocrt_depth_list)
     for c_size, c_target,s in (extra_params if (dataset == 'synthetic_manifold' or 
           dataset == 'synthetic_illustrative' or dataset == 'hts') else [(None, None, None)])]
     
-    for dataset, ocdt_depth, class_size, class_target_size,s in result:
+    for dataset, ocrt_depth, class_size, class_target_size,s in result:
         if dataset == 'synthetic_manifold':
             optimization_problem = formulate_and_solve_lp_transhipment_e2e
             problem = 'synthetic_manifold'
@@ -87,8 +87,8 @@ if __name__ == '__main__':
             X_train, y_train, ysum_train = features_df.iloc[tr_idx], targets_df.iloc[tr_idx], targetsum.iloc[tr_idx]
             X_test, y_test, ysum_test = features_df.iloc[te_idx], targets_df.iloc[te_idx], targetsum.iloc[te_idx]
             
-            regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocdt_min_samples_leaf,
-                                            min_samples_split=ocdt_min_samples_split, max_depth=ocdt_depth)
+            regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocrt_min_samples_leaf,
+                                            min_samples_split=ocrt_min_samples_split, max_depth=ocrt_depth)
             
             cap = 1000
             quantities, optcost= {},{}
@@ -159,10 +159,10 @@ if __name__ == '__main__':
             dt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred_sklearn, X_test, dataset, 'DT',
                                                                         regressor.get_depth(), target_cols)
 
-            perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
+            perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
                                                         'weight_seed':[s],
-                                                        'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                        'min_samples_split': [ocdt_min_samples_split],
+                                                        'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                        'min_samples_split': [ocrt_min_samples_split],
                                                         'prediction_method': ['sklearn'],
                                                         'prediction_method_leaf': ['sklearn'],
                                                         'evaluation_method': ['sklearn'],
@@ -182,17 +182,17 @@ if __name__ == '__main__':
             for bforce, use_hashmaps, use_initial_solution, evaluation_method,prediction_method,prediction_method_leaf in prod:
 
                 print("==============")
-                print(f'Dataset: {datasetname}', f'OCDT_depth:{ocdt_depth}')
+                print(f'Dataset: {datasetname}', f'ocrt_depth:{ocrt_depth}')
                 print(f'Seed: {s}')
                 print(f'Split Prediction: {prediction_method}')
                 print(f'Leaf Prediction: {prediction_method_leaf}')
                 
                 
                 nof_infeasibilities_method = lambda y, x: calculate_number_of_infeasibilities(y, x, dataset,
-                                                                        'OCDT', ocdt_depth, target_cols, verbose)
+                                                                        'OCRT', ocrt_depth, target_cols, verbose)
                 lagrangian_multiplier = 0
                 
-                # w, quantities and capacity arrive from the tree (see the OCDT
+                # w, quantities and capacity arrive from the tree (see the ocrt
                 # constructor below), so use those parameters rather than closing
                 # over the outer weights/cap. They are forwarded as keyword-only
                 # extras, which keeps the positional signature of
@@ -207,9 +207,9 @@ if __name__ == '__main__':
                             initial_solution, lagrangian_multiplier, prediction_method_leaf, evaluation_method, optimization_problem, verbose, bforce,
                             w=w, quantities=quantities, capacity=capacity)
                 
-                # NOTE: ocdt_c must be extended to accept and forward quantities and
+                # NOTE: ocrt_c must be extended to accept and forward quantities and
                 # capacity alongside w before this runs (see the note at the top).
-                tree = OCDT(max_depth=ocdt_depth, min_samples_leaf=ocdt_min_samples_leaf, min_samples_split=ocdt_min_samples_split,
+                tree = OCRT(max_depth=ocrt_depth, min_samples_leaf=ocrt_min_samples_leaf, min_samples_split=ocrt_min_samples_split,
                             w = weights, pass_w = True, quantities = quantities_train, capacity = cap,
                             split_criteria=split_criteria, leaf_prediction_method=leaf_prediction_method,
                             nof_infeasibilities_method=nof_infeasibilities_method, verbose=verbose, use_hashmaps = use_hashmaps, use_initial_solution = use_initial_solution,
@@ -219,9 +219,9 @@ if __name__ == '__main__':
                 y_pred_train, quantity_train = tree.predict(X_train)
                 
                 y_pred, quantity_pred = tree.predict(X_test)
-                ocdt_mse_sum = weighted_sum_squared_error(y_test, y_pred,weights)
-                ocdt_mse = mean_squared_error(y_train, y_pred_train)
-                ocdt_mse = mean_squared_error(y_test, y_pred)
+                ocrt_mse_sum = weighted_sum_squared_error(y_test, y_pred,weights)
+                ocrt_mse = mean_squared_error(y_train, y_pred_train)
+                ocrt_mse = mean_squared_error(y_test, y_pred)
                 
                 y_pred_df = pd.DataFrame(y_pred)
                 y_pred_df['leaf_id'] = tree.apply(X_test)[0]
@@ -245,33 +245,33 @@ if __name__ == '__main__':
                     regret[i] += abs(temp-cost[i])**2
                 
                 
-                avg_ocdt_cost = sum(cost)/len(cost)
-                avg_ocdt_regret2 = sum(regret)/len(regret)
-                avg_ocdt_regret = (sum([abs(aa) for aa in regret])**.5)/len(regret)
-                print('Cost OCDT',avg_ocdt_cost)
+                avg_ocrt_cost = sum(cost)/len(cost)
+                avg_ocrt_regret2 = sum(regret)/len(regret)
+                avg_ocrt_regret = (sum([abs(aa) for aa in regret])**.5)/len(regret)
+                print('Cost OCRT',avg_ocrt_cost)
                 print('Regret Sklearn',avg_sklearn_regret)
 
-                print('Regret OCDT',avg_ocdt_regret)
+                print('Regret OCRT',avg_ocrt_regret)
                 
-                print('Cost',avg_sklearn_cost,avg_ocdt_cost,100*(avg_sklearn_cost-avg_ocdt_cost)/avg_sklearn_cost)
-                print('Regret',avg_sklearn_regret,avg_ocdt_regret,100*(avg_sklearn_regret-avg_ocdt_regret)/avg_sklearn_regret)
+                print('Cost',avg_sklearn_cost,avg_ocrt_cost,100*(avg_sklearn_cost-avg_ocrt_cost)/avg_sklearn_cost)
+                print('Regret',avg_sklearn_regret,avg_ocrt_regret,100*(avg_sklearn_regret-avg_ocrt_regret)/avg_sklearn_regret)
                 
-                ocdt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'OCDT', ocdt_depth, target_cols)
+                ocrt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'OCRT', ocrt_depth, target_cols)
                 
                 
-                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                            'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                            'min_samples_split': [ocdt_min_samples_split],
+                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                            'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                            'min_samples_split': [ocrt_min_samples_split],
                                                             'prediction_method': [prediction_method],
                                                             'prediction_method_leaf': [prediction_method_leaf],
                                                             'evaluation_method': [evaluation_method],
-                                                            # 'mse': [ocdt_mse], 'Noise free mse': [ocdt_mse2], 
-                                                            'mse_sum': [ocdt_mse_sum], 'mse': [ocdt_mse], 
-                                                            'mse gap sum':[(ocdt_mse_sum-dt_mse_sum)/dt_mse_sum], 'mse gap':[(ocdt_mse-dt_mse)/dt_mse],
-                                                            'optimization_cost':[avg_ocdt_cost], 'optimization_cost_gap':[(avg_sklearn_cost-avg_ocdt_cost)/avg_sklearn_cost],
-                                                            'optimization_regret':[avg_ocdt_regret], 'optimization_regret_gap':[(avg_sklearn_regret-avg_ocdt_regret)/avg_sklearn_regret],
-                                                            'optimization_regret2':[avg_ocdt_regret2], 'optimization_regret2_gap':[(avg_sklearn_regret2-avg_ocdt_regret2)/avg_sklearn_regret2],
-                                                            'nof_infeasibilities': [ocdt_nof_infeasibilities],
+                                                            # 'mse': [ocrt_mse], 'Noise free mse': [ocrt_mse2], 
+                                                            'mse_sum': [ocrt_mse_sum], 'mse': [ocrt_mse], 
+                                                            'mse gap sum':[(ocrt_mse_sum-dt_mse_sum)/dt_mse_sum], 'mse gap':[(ocrt_mse-dt_mse)/dt_mse],
+                                                            'optimization_cost':[avg_ocrt_cost], 'optimization_cost_gap':[(avg_sklearn_cost-avg_ocrt_cost)/avg_sklearn_cost],
+                                                            'optimization_regret':[avg_ocrt_regret], 'optimization_regret_gap':[(avg_sklearn_regret-avg_ocrt_regret)/avg_sklearn_regret],
+                                                            'optimization_regret2':[avg_ocrt_regret2], 'optimization_regret2_gap':[(avg_sklearn_regret2-avg_ocrt_regret2)/avg_sklearn_regret2],
+                                                            'nof_infeasibilities': [ocrt_nof_infeasibilities],
                                                             'training_duration': [tree.training_duration],
                                                             'use_brute_force': [bforce],
                                                             'use_hashmaps': [use_hashmaps],
@@ -279,6 +279,6 @@ if __name__ == '__main__':
 
 
                 # perf_df.to_csv(f'data/results/{datasetname}_e2e.csv', index=False)
-                print(f'Training Time of OCDT: {tree.training_duration}')
+                print(f'Training Time of OCRT: {tree.training_duration}')
                 
               

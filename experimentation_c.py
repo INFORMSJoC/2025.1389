@@ -8,23 +8,23 @@ from sklearn.model_selection import KFold
 import numpy as np
 
 from apps import *
-from library.utils import *
-from library.ocdt_c import OCDT
-from library.RandomForest import RandomForestOCDT
+from library.utils_c import *
+from library.ocrt_c import OCRT
+from library.RandomForest import RandomForestOCRT
 from library.Preprocessing import *
 import itertools
 
 base_folder = os.getcwd()
 
 if __name__ == '__main__':
-    ocdt_min_samples_split = 10
-    ocdt_min_samples_leaf = 5
+    ocrt_min_samples_split = 10
+    ocrt_min_samples_leaf = 5
     number_of_folds = 5
     verbose = False
     bforce_list = [True,False] # True for EOCRT - False for MOCRT
     use_hashmaps_list = [True]    
     use_initial_solution_list = [False]
-    ocdt_depth_list = [5,7] 
+    ocrt_depth_list = [5,7] 
     class_target_size_list = [5,9]
     class_size_list = [500,1000,2000]
     feature_size_list = [6]
@@ -39,12 +39,12 @@ if __name__ == '__main__':
     perf_df = pd.DataFrame()
     
     extra_params = list(itertools.product(class_size_list, class_target_size_list,seed_list,feature_size_list))
-    result = [(dataset, ocdt_depth, c_size, c_target,s,featuresize)
-    for dataset, ocdt_depth in itertools.product(dataset_list, ocdt_depth_list)
+    result = [(dataset, ocrt_depth, c_size, c_target,s,featuresize)
+    for dataset, ocrt_depth in itertools.product(dataset_list, ocrt_depth_list)
     for c_size, c_target,s,featuresize in (extra_params if (dataset == 'synthetic_manifold' or dataset == 'synthetic_manifold_nonconvex' or 
           dataset == 'hts' or dataset == 'hts_global') else [(None, None, None)])]
     
-    for dataset, ocdt_depth, class_size, class_target_size,s,featuresize in result:
+    for dataset, ocrt_depth, class_size, class_target_size,s,featuresize in result:
         # holds the feasible-set projection of the targets; only the manifold
         # datasets have one defined, so it stays None for the others
         preprop_targets_df = None
@@ -152,8 +152,8 @@ if __name__ == '__main__':
             has_projection = preprop_targets_df is not None
             preprop_y_train = preprop_targets_df.iloc[tr_idx] if has_projection else None
             
-            regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocdt_min_samples_leaf,
-                                            min_samples_split=ocdt_min_samples_split, max_depth=ocdt_depth)
+            regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocrt_min_samples_leaf,
+                                            min_samples_split=ocrt_min_samples_split, max_depth=ocrt_depth)
             start = time.time()
             regressor.fit(X_train, y_train)
             end = time.time()
@@ -169,9 +169,9 @@ if __name__ == '__main__':
             dt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred_sklearn, X_test, dataset, 'DT',
                                                                         regressor.get_depth(), target_cols)
 
-            perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                        'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                        'min_samples_split': [ocdt_min_samples_split],
+            perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                        'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                        'min_samples_split': [ocrt_min_samples_split],
                                                         'prediction_method': ['sklearn'],
                                                         'prediction_method_leaf': ['sklearn'],
                                                         'evaluation_method': ['sklearn'],
@@ -181,8 +181,8 @@ if __name__ == '__main__':
 
             # ---- same DT, fitted on the projected training targets ----------
             if has_projection:
-                preprop_regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocdt_min_samples_leaf,
-                                                min_samples_split=ocdt_min_samples_split, max_depth=ocdt_depth)
+                preprop_regressor = DecisionTreeRegressor(random_state=20, min_samples_leaf=ocrt_min_samples_leaf,
+                                                min_samples_split=ocrt_min_samples_split, max_depth=ocrt_depth)
                 start = time.time()
                 preprop_regressor.fit(X_train, preprop_y_train)
                 end = time.time()
@@ -198,9 +198,9 @@ if __name__ == '__main__':
                 preprop_dt_nof_infeasibilities = calculate_number_of_infeasibilities(preprop_y_pred_sklearn, X_test, dataset, 'DT',
                                                                             preprop_regressor.get_depth(), target_cols)
 
-                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                            'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                            'min_samples_split': [ocdt_min_samples_split],
+                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                            'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                            'min_samples_split': [ocrt_min_samples_split],
                                                             'prediction_method': ['preprop_sklearn'],
                                                             'prediction_method_leaf': ['preprop_sklearn'],
                                                             'evaluation_method': ['preprop_sklearn'],
@@ -217,7 +217,7 @@ if __name__ == '__main__':
             for bforce, use_hashmaps, use_initial_solution, evaluation_method,prediction_method,prediction_method_leaf in prod:
 
                 print("==============")
-                print(f'Dataset: {datasetname}', f'OCDT_depth:{ocdt_depth}')
+                print(f'Dataset: {datasetname}', f'OCRT_depth:{ocrt_depth}')
                 print(f'Brute Force: {bforce}')
                 print(f'Initial Solution: {use_initial_solution}')
                 print(f'Evaluation: {evaluation_method}')
@@ -226,7 +226,7 @@ if __name__ == '__main__':
                 
                 
                 nof_infeasibilities_method = lambda y, x: calculate_number_of_infeasibilities(y, x, dataset,
-                                                                        'OCDT', ocdt_depth, target_cols, verbose)
+                                                                        'OCRT', ocrt_depth, target_cols, verbose)
                 lagrangian_multiplier = 0
                 # no w -> unweighted criterion (original behaviour, unchanged call)
                 split_criteria = lambda y, x, nof_infeasibilities_method, initial_solution: split_criteria_with_methods(y, x, nof_infeasibilities_method,
@@ -236,8 +236,8 @@ if __name__ == '__main__':
                 
                 # w is unused here: the criteria functions take the 4-argument
                 # signature (y, x, nof_infeasibilities_method, initial_solution),
-                # so pass_w=False tells the merged OCDT not to forward w.
-                tree = OCDT(max_depth=ocdt_depth, min_samples_leaf=ocdt_min_samples_leaf, min_samples_split=ocdt_min_samples_split,
+                # so pass_w=False tells the merged OCRT not to forward w.
+                tree = OCRT(max_depth=ocrt_depth, min_samples_leaf=ocrt_min_samples_leaf, min_samples_split=ocrt_min_samples_split,
                             w=None, pass_w=False,
                             split_criteria=split_criteria, leaf_prediction_method=leaf_prediction_method,
                             nof_infeasibilities_method=nof_infeasibilities_method, verbose=verbose, use_hashmaps = use_hashmaps, use_initial_solution = use_initial_solution,
@@ -245,39 +245,39 @@ if __name__ == '__main__':
                 
                 tree.fit(X_train, y_train)
                 y_pred = tree.predict(X_train)
-                ocdt_mse_train = mean_squared_error(y_train, y_pred)
+                ocrt_mse_train = mean_squared_error(y_train, y_pred)
 
-                print(f'OCDT MSE Train: {ocdt_mse_train}')
+                print(f'OCRT MSE Train: {ocrt_mse_train}')
                 y_pred = tree.predict(X_test)
                 y_pred_df = pd.DataFrame(y_pred)
                 y_pred_df['leaf_id'] = tree.apply(X_test)[0]
                 y_pred_df = y_pred_df.drop_duplicates()
-                ocdt_mse = mean_squared_error(y_test, y_pred)
-                print(f'OCDT MSE: {ocdt_mse}')
+                ocrt_mse = mean_squared_error(y_test, y_pred)
+                print(f'OCRT MSE: {ocrt_mse}')
                 
-                ocdt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'OCDT', ocdt_depth, target_cols)
+                ocrt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'OCRT', ocrt_depth, target_cols)
                 
                 
-                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                            'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                            'min_samples_split': [ocdt_min_samples_split],
+                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                            'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                            'min_samples_split': [ocrt_min_samples_split],
                                                             'prediction_method': [prediction_method],
                                                             'prediction_method_leaf': [prediction_method_leaf],
                                                             'evaluation_method': [evaluation_method],
-                                                            'mse': [ocdt_mse], 'mse gap':[(ocdt_mse-dt_mse)/dt_mse],
-                                                            'nof_infeasibilities': [ocdt_nof_infeasibilities],
+                                                            'mse': [ocrt_mse], 'mse gap':[(ocrt_mse-dt_mse)/dt_mse],
+                                                            'nof_infeasibilities': [ocrt_nof_infeasibilities],
                                                             'training_duration': [tree.training_duration],
                                                             'use_brute_force': [bforce],
                                                             'use_hashmaps': [use_hashmaps],
                                                             'use_initial_solution': [use_initial_solution]})], ignore_index=True)
                 
                 
-                ocdt_params = {
-                    "max_depth": ocdt_depth,
+                ocrt_params = {
+                    "max_depth": ocrt_depth,
                     "w": None,
                     "pass_w": False,
-                    "min_samples_leaf": ocdt_min_samples_leaf,
-                    "min_samples_split": ocdt_min_samples_split,
+                    "min_samples_leaf": ocrt_min_samples_leaf,
+                    "min_samples_split": ocrt_min_samples_split,
                     "split_criteria": split_criteria,
                     "leaf_prediction_method": leaf_prediction_method,
                     "nof_infeasibilities_method": nof_infeasibilities_method,
@@ -288,21 +288,21 @@ if __name__ == '__main__':
                     "problem": problem
                 }
                 _, m = X_train.shape
-                forest = RandomForestOCDT(n_estimators=n_estimator, random_state=42, max_features=int(m*0.8), **ocdt_params)
+                forest = RandomForestOCRT(n_estimators=n_estimator, random_state=42, max_features=int(m*0.8), **ocrt_params)
                 forest.fit(X_train, y_train)
                 y_pred = forest.predict(X_test,num_targets)
-                RFocdt_mse = mean_squared_error(y_test, y_pred)
-                print(f'RF MSE: {RFocdt_mse}')
-                RFocdt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'RF_OCDT', ocdt_depth, target_cols)
+                RFocrt_mse = mean_squared_error(y_test, y_pred)
+                print(f'RF MSE: {RFocrt_mse}')
+                RFocrt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'RF_OCRT', ocrt_depth, target_cols)
                 
-                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                            'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                            'min_samples_split': [ocdt_min_samples_split],
+                perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                            'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                            'min_samples_split': [ocrt_min_samples_split],
                                                             'prediction_method': [prediction_method],
                                                             'prediction_method_leaf': [prediction_method_leaf],
                                                             'evaluation_method': [evaluation_method],
-                                                            'mse': [RFocdt_mse], 'mse gap':[(RFocdt_mse-dt_mse)/dt_mse],
-                                                            'nof_infeasibilities': [RFocdt_nof_infeasibilities],
+                                                            'mse': [RFocrt_mse], 'mse gap':[(RFocrt_mse-dt_mse)/dt_mse],
+                                                            'nof_infeasibilities': [RFocrt_nof_infeasibilities],
                                                             'training_duration': [forest.training_duration],
                                                             'use_brute_force': [bforce],
                                                             'use_hashmaps': [use_hashmaps],
@@ -312,21 +312,21 @@ if __name__ == '__main__':
                 
                 # ---- same forest, fitted on the projected training targets --
                 if has_projection:
-                    preprop_forest = RandomForestOCDT(n_estimators=n_estimator, random_state=42, max_features=int(m*0.8), **ocdt_params)
+                    preprop_forest = RandomForestOCRT(n_estimators=n_estimator, random_state=42, max_features=int(m*0.8), **ocrt_params)
                     preprop_forest.fit(X_train, preprop_y_train)
                     y_pred = preprop_forest.predict(X_test,num_targets)
-                    preprop_RFocdt_mse = mean_squared_error(y_test, y_pred)
-                    print(f'RF MSE preprocessed: {preprop_RFocdt_mse}')
-                    preprop_RFocdt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'RF_OCDT', ocdt_depth, target_cols)
+                    preprop_RFocrt_mse = mean_squared_error(y_test, y_pred)
+                    print(f'RF MSE preprocessed: {preprop_RFocrt_mse}')
+                    preprop_RFocrt_nof_infeasibilities = calculate_number_of_infeasibilities(y_pred, X_test, dataset, 'RF_OCRT', ocrt_depth, target_cols)
 
-                    perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocdt_depth],
-                                                                'min_samples_leaf': [ocdt_min_samples_leaf],
-                                                                'min_samples_split': [ocdt_min_samples_split],
+                    perf_df = pd.concat([perf_df, pd.DataFrame({'data': [datasetname], 'fold': [cv_fold], 'depth': [ocrt_depth],
+                                                                'min_samples_leaf': [ocrt_min_samples_leaf],
+                                                                'min_samples_split': [ocrt_min_samples_split],
                                                                 'prediction_method': ['preprop_' + prediction_method],
                                                                 'prediction_method_leaf': ['preprop_' + prediction_method_leaf],
                                                                 'evaluation_method': [evaluation_method],
-                                                                'mse': [preprop_RFocdt_mse], 'mse gap':[(preprop_RFocdt_mse-dt_mse)/dt_mse],
-                                                                'nof_infeasibilities': [preprop_RFocdt_nof_infeasibilities],
+                                                                'mse': [preprop_RFocrt_mse], 'mse gap':[(preprop_RFocrt_mse-dt_mse)/dt_mse],
+                                                                'nof_infeasibilities': [preprop_RFocrt_nof_infeasibilities],
                                                                 'training_duration': [preprop_forest.training_duration],
                                                                 'use_brute_force': [bforce],
                                                                 'use_hashmaps': [use_hashmaps],
@@ -335,7 +335,7 @@ if __name__ == '__main__':
 
                 # perf_df.to_csv(f'data/results/perf_df_{datasetname}_df_new_experimentation.csv', index=False)
 
-                print(f'Training Time of OCDT: {tree.training_duration}')
+                print(f'Training Time of OCRT: {tree.training_duration}')
                 print(f'Training Time of RF: {forest.training_duration}')
                 if has_projection:
                     print(f'Training Time of RF preprocessed: {preprop_forest.training_duration}')

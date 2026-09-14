@@ -5,8 +5,8 @@ import time
 import numpy as np
 from sklearn.utils import resample
 from sklearn.model_selection import train_test_split
-# from ocdt import OCDT
-from .ocdt_c import OCDT
+# from ocrt import OCRT
+from .ocrt_c import OCRT
 import pandas as pd
 from .utils_c import *
 from sklearn.metrics import mean_squared_error
@@ -16,21 +16,21 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 from apps import *
 
-class RandomForestOCDT:
-    def __init__(self, n_estimators=10, random_state=42, max_samples=None, max_features='sqrt', **ocdt_params):
+class RandomForestOCRT:
+    def __init__(self, n_estimators=10, random_state=42, max_samples=None, max_features='sqrt', **ocrt_params):
         """
-        Random Forest using OCDT as base learner.
+        Random Forest using OCRT as base learner.
         
         Parameters:
         - n_estimators: Number of trees in the forest
         - max_features: Number of features to consider for each split ('sqrt', 'log2', or int)
-        - ocdt_params: Dictionary of hyperparameters for OCDT
+        - ocrt_params: Dictionary of hyperparameters for OCRT
         """
         self.n_estimators = n_estimators
         self.random_state = random_state
         self.max_features = max_features
         self.max_samples = max_samples
-        self.ocdt_params = ocdt_params if ocdt_params else {}
+        self.ocrt_params = ocrt_params if ocrt_params else {}
         self.trees = []
 
     def _get_max_features(self, n_features):
@@ -67,7 +67,7 @@ class RandomForestOCDT:
             categorical_cols = X_sample.select_dtypes(include=['object', 'category']).columns
             X_sample = pd.get_dummies(X_sample, columns=categorical_cols, drop_first=True, dtype=int)
 
-            tree = OCDT(**self.ocdt_params)
+            tree = OCRT(**self.ocrt_params)
             tree.fit(X_sample, y_sample)
             self.trees.append((tree, feature_indices))
             print(f'Random Forest estimator {i} is done in {tree.training_duration} seconds!!!')
@@ -76,7 +76,7 @@ class RandomForestOCDT:
     
     def predict(self, X,numtarget):
         """
-        Predict using the average of the OCDT trees.
+        Predict using the average of the OCRT trees.
         """
         predictions = np.zeros((X.shape[0], self.n_estimators,numtarget))
         for i, (tree, feature_indices) in enumerate(self.trees):

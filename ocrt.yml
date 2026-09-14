@@ -1,4 +1,4 @@
-name: ocdt
+name: ocrt
 channels:
   - conda-forge
   - gurobi

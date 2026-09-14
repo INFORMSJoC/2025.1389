@@ -23,7 +23,7 @@ def calculate_mad(y, predictions):
 def calculate_poisson_deviance(y, predictions):
     return 2 * np.sum(predictions - y - y * np.log(predictions / y))
 
-def calculate_number_of_infeasibilities(y_pred, X_test, dataset, model, ocdt_depth, target_cols, verbose=True):
+def calculate_number_of_infeasibilities(y_pred, X_test, dataset, model, ocrt_depth, target_cols, verbose=True):
     if dataset == 'class':
         cumsums = np.array([sum(y_pred[i] > 0.0001) for i in range(len(y_pred))])
         nof_infeasibilities = np.sum(cumsums >= 3)
@@ -148,7 +148,7 @@ def calculate_number_of_infeasibilities(y_pred, X_test, dataset, model, ocdt_dep
                     t+=1 
 
     if verbose:
-        print(f'Number of infeasible predictions for {model} (Depth {ocdt_depth}): {nof_infeasibilities}')
+        print(f'Number of infeasible predictions for {model} (Depth {ocrt_depth}): {nof_infeasibilities}')
 
     return nof_infeasibilities
 
