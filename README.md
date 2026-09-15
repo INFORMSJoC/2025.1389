@@ -23,8 +23,8 @@ BibTeX for citing this software archive:
   title =         {{Output-Constrained Regression Trees}},
   year =          {2025},
   doi =           {10.1287/ijoc.2025.1389.cd},
-  url =           {[https://github.com/INFORMSJoC/2025.1389](https://github.com/INFORMSJoC/2025.1389)},
-  note =          {Available for download at [https://github.com/INFORMSJoC/2025.1389](https://github.com/INFORMSJoC/2025.1389)},
+  url =           {https://github.com/INFORMSJoC/2025.1389},
+  note =          {Available for download at https://github.com/INFORMSJoC/2025.1389},
 }
 ```
 
