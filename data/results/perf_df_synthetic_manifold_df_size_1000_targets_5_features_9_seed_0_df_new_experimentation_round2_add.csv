@@ -1,0 +1,26 @@
+data,fold,depth,min_samples_leaf,min_samples_split,prediction_method,prediction_method_leaf,evaluation_method,mse,mse gap,nof_infeasibilities,training_duration,use_brute_force,use_hashmaps,use_initial_solution,RF_n_estimators
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,0,5,5,10,sklearn,sklearn,sklearn,0.6623012992966244,0.0,200,0.0,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,0,5,5,10,preprop_sklearn,preprop_sklearn,preprop_sklearn,0.7071787052414905,0.06775980357056026,0,0.0,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,0,5,5,10,mean,optimal,mse,0.6979774661179208,0.053866973927402965,0,0.6038475036621094,True,True,False,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,0,5,5,10,mean,optimal,mse,0.6151749002604071,-0.07115552858837262,0,10.050156116485596,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,0,5,5,10,mean,optimal,mse,0.6684210583881902,0.00924014356919593,0,10.498419761657715,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,1,5,5,10,sklearn,sklearn,sklearn,0.7609315278357677,0.0,200,0.0025033950805664062,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,1,5,5,10,preprop_sklearn,preprop_sklearn,preprop_sklearn,0.8374629674104757,0.1005759871619169,0,0.002991914749145508,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,1,5,5,10,mean,optimal,mse,0.808413717269757,0.06240008160660338,0,0.684638261795044,True,True,False,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,1,5,5,10,mean,optimal,mse,0.7008958568714406,-0.07889759954496797,0,10.91628885269165,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,1,5,5,10,mean,optimal,mse,0.779414654564009,0.02429013130893769,0,10.662534475326538,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,2,5,5,10,sklearn,sklearn,sklearn,0.7312117106625282,0.0,200,0.003743410110473633,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,2,5,5,10,preprop_sklearn,preprop_sklearn,preprop_sklearn,0.8083739715207188,0.10552656601776281,0,0.0020475387573242188,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,2,5,5,10,mean,optimal,mse,0.7863898222014104,0.07546119780943746,0,0.6329970359802246,True,True,False,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,2,5,5,10,mean,optimal,mse,0.6747903398095284,-0.07716147051567071,0,10.529004573822021,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,2,5,5,10,mean,optimal,mse,0.7471033417046199,0.021733283001844662,0,10.478771209716797,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,3,5,5,10,sklearn,sklearn,sklearn,0.8174620209923018,0.0,200,0.0022401809692382812,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,3,5,5,10,preprop_sklearn,preprop_sklearn,preprop_sklearn,0.901666180220343,0.10300681507604144,0,0.003178119659423828,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,3,5,5,10,mean,optimal,mse,0.8433157815401019,0.03162686447061686,0,0.6321263313293457,True,True,False,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,3,5,5,10,mean,optimal,mse,0.7343913176784623,-0.10162026024524236,0,10.533273220062256,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,3,5,5,10,mean,optimal,mse,0.7908317768904146,-0.03257673557673204,0,11.00232195854187,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,4,5,5,10,sklearn,sklearn,sklearn,0.7609077882645596,0.0,200,0.0024385452270507812,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,4,5,5,10,preprop_sklearn,preprop_sklearn,preprop_sklearn,0.8475912968885005,0.11392117410395329,0,0.0021822452545166016,,,,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,4,5,5,10,mean,optimal,mse,0.7587790785878685,-0.0027975921780826465,0,0.6617095470428467,True,True,False,
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,4,5,5,10,mean,optimal,mse,0.6679491868301316,-0.12216802465176936,0,10.714677572250366,True,True,False,20.0
+synthetic_manifold_df_size_1000_targets_5_features_9_seed_0,4,5,5,10,mean,optimal,mse,0.7742480052987124,0.01753197593702974,0,10.538259506225586,True,True,False,20.0
